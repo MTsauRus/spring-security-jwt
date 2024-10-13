@@ -1,6 +1,8 @@
 package com.cos.jwtpractice.config;
 
+import com.cos.jwtpractice.config.auth.UserRepository;
 import com.cos.jwtpractice.config.jwt.JwtAuthenticationFilter;
+import com.cos.jwtpractice.config.jwt.JwtAuthorizationFilter;
 import com.cos.jwtpractice.filter.MyFilter1;
 import com.cos.jwtpractice.filter.MyFilter3;
 import lombok.RequiredArgsConstructor;
@@ -26,12 +28,13 @@ public class SecurityConfig {
 
     private final CorsConfig corsConfig;
     private final CorsFilter corsFilter;
+    private final UserRepository userRepository;
 
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
+//    @Bean
+//    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+//        return authenticationConfiguration.getAuthenticationManager();
+//    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -46,6 +49,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 안씀
                 .addFilter(corsConfig.corsFilter()) // cross origin 요청이 와도 상관없음
                 .addFilter(new JwtAuthenticationFilter(authenticationManager)) // AuthenticationManager를 넘겨야 함
+                .addFilter(new JwtAuthorizationFilter(authenticationManager, userRepository)) // 인증 및 권한 관련 url 요청 시 타는 필터
                 .formLogin(form -> form.disable()) // form 태그로 로그인을 안함
                 .httpBasic(basic -> basic.disable()) // 기본 http 방식 로그인 안씀
                 .authorizeHttpRequests(requests -> requests
